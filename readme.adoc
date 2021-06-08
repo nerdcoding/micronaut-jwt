@@ -1,0 +1,137 @@
+
+== Micronaut JWT
+
+Simple https://micronaut.io[Micronaut, window=_blank] based application. This application provides endpoints to login
+a user by her credentials. The login will create a JWT based `access_token` which could be used to call other protected
+endpoints. Anymore a `refresh_token` will be created, which could be used to re-new an expired `access_token`.
+
+== Build & Run application
+
+This application is based on:
+
+* JDK 11 (or higher)
+* Maven 3.6.3 (or higher)
+
+Simply build the application with:
+```
+mvn clean install
+```
+
+And then run the application with:
+```
+mvn mn:run
+```
+
+== Use application
+
+=== Users
+
+There a three different had-codes users (see `UserPasswordAuthenticationProvider`):
+
+|===
+|User |Password |Role
+
+|bob| bob123| ROLE_USER
+|cindy| cindy123| ROLE_USER
+|admin| admin123| ROLE_USER ROLE_ADMIN
+|===
+
+=== Login
+
+To login for a user call the `/user/login` endpoint:
+
+.Request
+```
+POST /micronaut-jwt/user/login
+Content-Type: application/json
+
+{
+    "username": "bob",
+    "password": "bob123"
+}
+```
+
+.Response
+```
+HTTP/1.1 200 OK
+
+{
+    "username": "bob",
+    "roles": [
+        "ROLE_USER"
+    ],
+    "access_token": "eyJhbGciOiJIUzUxMiJ9....",
+    "refresh_token": "eyJhbGciOiJIUzUxMiJ9....",
+    "token_type": "Bearer",
+    "expires_in": 60
+}
+```
+
+=== Token refresh
+
+To refresh an `access_token` with the provided `refresh_token` call the `/oauth/access_token` endpoint:
+
+.Request
+```
+POST /micronaut-jwt/oauth/access_token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&refresh_token=<add-refresh-token>
+```
+
+.Response
+```
+HTTP/1.1 200 OK
+
+{
+    "username": "bob",
+    "roles": [
+        "ROLE_USER"
+    ],
+    "access_token": "eyJhbGciOiJIUzUxMiJ9....",
+    "refresh_token": "eyJhbGciOiJIUzUxMiJ9....",
+    "token_type": "Bearer",
+    "expires_in": 60
+}
+```
+
+=== Secured endpoints
+
+The application contains two secured endpoints:
+
+* `/hello` +
+Could be called with an JWT provided for each user having the role `ROLE_USER` (bob, cindy and admin)
+* `/admin`
+Could be called with an JWT provided for each user having the role `ROLE_ADMIN` (admin)
+
+If you login with the user `bob` with the provided `access_token` call the `/hello` endpoint:
+
+.Request
+```
+GET /micronaut-jwt/hello
+Authorization: Bearer <add-access-token>
+```
+
+.Response
+```
+HTTP/1.1 200 OK
+
+hello
+```
+
+If the `/admin` endpoint is called with an `access_token` from the user `bob`:
+
+.Response
+```
+HTTP/1.1 403 Forbidden
+```
+
+And if the `/admin` or `/hello` endpoints are called without or with an invalid `access_token`:
+
+.Response
+```
+HTTP/1.1 401 Unauthorized
+```
+
+
+
