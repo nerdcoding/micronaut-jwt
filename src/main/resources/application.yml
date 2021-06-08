@@ -1,0 +1,61 @@
+micronaut:
+  application:
+    name: micronaut-jwt
+  controller:
+    base-path: /micronaut-jwt
+    server:
+      #context-path: /micronaut-jwt   -- we use 'base-path', because the context-path would also apply for static resources
+      port: 8080
+  router:
+    static-resources:
+      default:
+        enabled: true
+        mapping: "/**"
+        paths: "classpath:public"
+
+  # Micronaut Security configuration
+  security:
+    enabled: true
+    authentication: bearer # LoginHandler: cookie, session, bearer, idtoken
+    endpoints:
+      login:
+        enabled: true
+        path: '${micronaut.controller.base-path}/user/login'
+      oauth:
+        enabled: true
+        path: '${micronaut.controller.base-path}/oauth/access_token'
+        get-allowed: false
+    intercept-url-map:  # Anonymous for specific paths (e.g. index, static resources, ...)
+      - pattern: /*
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /static/**
+        http-method: GET
+        access:
+          - isAnonymous()Anonymous
+      - pattern: /locales/**
+        http-method: GET
+        access:
+          - isAnonymous()
+    token:
+      jwt:
+        generator:
+          access-token:
+            expiration: 60  # one hour
+          refresh-token:
+            enabled: true
+            jws-algorithm: HS512
+            secret: 'edShUTQIjFA/3+Ai0lUGcv0RmnN7Kh5ufgDd3ypXebN+B2+cuUZ446w99nUt0XBmvWaEbTsGStESonwFAVa4DsO2+yvbR1qYymbQsBFGwDHP70WjYs/tALe4fmiQy/c7h/uvkfndFLot136QOPo0jzibcreOV/1BxuQTyMgGTRRc7wHzPwGfvxujnd0myTyz2pI+FoPI4xhaOl1ZbR/GuOdeSeMDBiCtAqbDsA=='
+            base64: true
+        signatures:
+          secret:
+            generator:
+              secret: 'UaaOlcsrG2w7+rl/FN7O5GMEsviHy3bOIYq3V/PhtlYci1c4U5ITzmIos84/Ypq3Gqkcqm46q04/YMDXgCjCkDCtCqbB/EYGcCAadxWWt7nD2SLkmghiKQ99L6iP/HM4xyZqV3lD0PpN5Xq4SRBR/DwLRcbgRV17imK3pxvF8yeZMgovAg39qCsKXSGwIDWTd+imk8zPQ8cge70iCCWIa4o9PGrZTri6/PaveA=='
+              jws-algorithm: HS512
+
+logger:
+  levels:
+    org.nerdcoding.example.micronaut.jwt: DEBUG
+    io.micronaut.security: DEBUG
+
