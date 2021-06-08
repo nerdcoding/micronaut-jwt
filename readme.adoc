@@ -101,7 +101,7 @@ The application contains two secured endpoints:
 
 * `/hello` +
 Could be called with an JWT provided for each user having the role `ROLE_USER` (bob, cindy and admin)
-* `/admin`
+* `/admin` +
 Could be called with an JWT provided for each user having the role `ROLE_ADMIN` (admin)
 
 If you login with the user `bob` with the provided `access_token` call the `/hello` endpoint:
